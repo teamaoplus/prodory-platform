@@ -14,13 +14,13 @@ This guide explains how to set up GitHub Actions to automatically build and push
 1. Log in to https://hub.docker.com
 2. Click "Create Repository"
 3. Create repositories for each service:
-   - `prodory/finops-dashboard`
-   - `prodory/data-finops-agent`
-   - `prodory/k8s-in-a-box`
-   - `prodory/storage-autoscaler`
-   - `prodory/cloud-sentinel`
-   - `prodory/vmware-migration`
-   - `prodory/vm-to-container`
+   - `omps/finops-dashboard`
+   - `omps/data-finops-agent`
+   - `omps/k8s-in-a-box`
+   - `omps/storage-autoscaler`
+   - `omps/cloud-sentinel`
+   - `omps/vmware-migration`
+   - `omps/vm-to-container`
 
 ### Option B: Create via Docker CLI
 
@@ -133,11 +133,11 @@ The workflows use the following tagging strategy:
 
 | Event | Tags Created | Example |
 |-------|--------------|---------|
-| Push to `main` | `latest`, `sha-abc1234` | `prodory/finops-dashboard:latest` |
-| Push to `develop` | `develop`, `sha-abc1234` | `prodory/finops-dashboard:develop` |
-| Tag `v1.2.3` | `1.2.3`, `1.2`, `1`, `latest` | `prodory/finops-dashboard:1.2.3` |
-| Pull Request | `pr-123` | `prodory/finops-dashboard:pr-123` |
-| Manual | Custom or timestamp | `prodory/finops-dashboard:manual-20240115-120000` |
+| Push to `main` | `latest`, `sha-abc1234` | `omps/finops-dashboard:latest` |
+| Push to `develop` | `develop`, `sha-abc1234` | `omps/finops-dashboard:develop` |
+| Tag `v1.2.3` | `1.2.3`, `1.2`, `1`, `latest` | `omps/finops-dashboard:1.2.3` |
+| Pull Request | `pr-123` | `omps/finops-dashboard:pr-123` |
+| Manual | Custom or timestamp | `omps/finops-dashboard:manual-20240115-120000` |
 
 ## Pulling Images
 
@@ -145,19 +145,19 @@ Once built, you can pull images from Docker Hub:
 
 ```bash
 # Pull latest
-docker pull prodory/finops-dashboard:latest
-docker pull prodory/data-finops-agent:latest
-docker pull prodory/k8s-in-a-box:latest
-docker pull prodory/storage-autoscaler:latest
-docker pull prodory/cloud-sentinel:latest
-docker pull prodory/vmware-migration:latest
-docker pull prodory/vm-to-container:latest
+docker pull omps/finops-dashboard:latest
+docker pull omps/data-finops-agent:latest
+docker pull omps/k8s-in-a-box:latest
+docker pull omps/storage-autoscaler:latest
+docker pull omps/cloud-sentinel:latest
+docker pull omps/vmware-migration:latest
+docker pull omps/vm-to-container:latest
 
 # Pull specific version
-docker pull prodory/finops-dashboard:v1.0.0
+docker pull omps/finops-dashboard:v1.0.0
 
 # Pull for specific architecture
-docker pull --platform linux/arm64 prodory/finops-dashboard:latest
+docker pull --platform linux/arm64 omps/finops-dashboard:latest
 ```
 
 ## Using Images in docker-compose.yml
@@ -169,41 +169,41 @@ version: '3.8'
 
 services:
   finops-dashboard:
-    image: prodory/finops-dashboard:latest
+    image: omps/finops-dashboard:latest
     ports:
       - "3000:80"
     environment:
       - REACT_APP_API_URL=http://localhost:8000
 
   data-finops-agent:
-    image: prodory/data-finops-agent:latest
+    image: omps/data-finops-agent:latest
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://prodory:password@postgres:5432/prodory
 
   k8s-in-a-box:
-    image: prodory/k8s-in-a-box:latest
+    image: omps/k8s-in-a-box:latest
     ports:
       - "8080:8080"
 
   storage-autoscaler:
-    image: prodory/storage-autoscaler:latest
+    image: omps/storage-autoscaler:latest
     ports:
       - "8001:8000"
 
   cloud-sentinel:
-    image: prodory/cloud-sentinel:latest
+    image: omps/cloud-sentinel:latest
     ports:
       - "8081:8080"
 
   vmware-migration:
-    image: prodory/vmware-migration:latest
+    image: omps/vmware-migration:latest
     ports:
       - "3001:3000"
 
   vm-to-container:
-    image: prodory/vm-to-container:latest
+    image: omps/vm-to-container:latest
     ports:
       - "3002:3000"
 ```
@@ -229,7 +229,7 @@ spec:
     spec:
       containers:
         - name: finops-dashboard
-          image: prodory/finops-dashboard:latest
+          image: omps/finops-dashboard:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
@@ -332,7 +332,7 @@ To push to multiple registries (Docker Hub + ECR + GCR):
   with:
     push: true
     tags: |
-      prodory/finops-dashboard:latest
+      omps/finops-dashboard:latest
       ${{ steps.login-ecr.outputs.registry }}/finops-dashboard:latest
 ```
 
