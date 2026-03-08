@@ -34,7 +34,7 @@ for repo in finops-dashboard data-finops-agent k8s-in-a-box storage-autoscaler c
     -H "Content-Type: application/json" \
     -u "your-username:your-password" \
     -d '{"name":"'$repo'","is_private":false}' \
-    https://hub.docker.com/v2/repositories/prodory/
+    https://hub.docker.com/v2/repositories/omps/
 done
 ```
 
@@ -302,7 +302,7 @@ https://github.com/YOUR_ORG/prodory-platform/actions
 
 View pushed images at:
 ```
-https://hub.docker.com/r/prodory/finops-dashboard/tags
+https://hub.docker.com/r/omps/finops-dashboard/tags
 ```
 
 ### Subscribe to Build Notifications
