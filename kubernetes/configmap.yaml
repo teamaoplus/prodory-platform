@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prodory-config
+  namespace: prodory
+data:
+  # Application Settings
+  APP_NAME: "Prodory Platform"
+  DEBUG: "false"
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  
+  # CORS Origins
+  CORS_ORIGINS: "http://localhost:3000,https://aoplus.in,https://*.aoplus.in"
+  
+  # AI/ML Settings
+  FORECAST_HORIZON_DAYS: "30"
+  ANOMALY_THRESHOLD: "2.5"
+  
+  # Scheduling
+  COST_SYNC_INTERVAL_MINUTES: "60"
+  RECOMMENDATION_GENERATION_INTERVAL_HOURS: "24"
+  
+  # Security
+  ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finops-dashboard-config
+  namespace: prodory
+data:
+  NODE_ENV: "production"
+  REACT_APP_API_URL: "http://data-finops-agent:8000"

@@ -1,0 +1,60 @@
+# Default values for storage-autoscaler
+
+replicaCount: 1
+
+image:
+  repository: prodory/storage-autoscaler
+  pullPolicy: IfNotPresent
+  tag: ""
+
+# Autoscaler configuration
+config:
+  # Storage usage threshold percentage to trigger scaling
+  thresholdPercent: 80
+  # Factor to multiply current size by when scaling (1.5 = 50% increase)
+  scaleFactor: 1.5
+  # Maximum size limit for PVCs
+  maxSize: "1Ti"
+  # Cooldown period in minutes between scaling operations
+  cooldownMinutes: 60
+  # Dry run mode - log scaling actions without actually scaling
+  dryRun: false
+
+# Metrics configuration
+metrics:
+  port: 8084
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: 30s
+    scrapeTimeout: 10s
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000

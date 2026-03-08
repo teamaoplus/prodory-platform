@@ -1,0 +1,214 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # AI FinOps Dashboard (React Frontend)
+  # ============================================
+  finops-dashboard:
+    build:
+      context: ./services/finops-dashboard
+      dockerfile: Dockerfile
+    container_name: prodory-finops-dashboard
+    ports:
+      - "${FINOPS_DASHBOARD_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - REACT_APP_SUPABASE_URL=${SUPABASE_URL}
+      - REACT_APP_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - REACT_APP_API_URL=${DATA_FINOPS_API_URL:-http://localhost:8000}
+    depends_on:
+      - data-finops-agent
+    networks:
+      - prodory-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # Data FinOps Agent (Python FastAPI Backend)
+  # ============================================
+  data-finops-agent:
+    build:
+      context: ./services/data-finops-agent
+      dockerfile: Dockerfile
+    container_name: prodory-data-finops-agent
+    ports:
+      - "${DATA_FINOPS_PORT:-8000}:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+    volumes:
+      - ./data/finops:/app/data
+      - ./config:/app/config:ro
+    networks:
+      - prodory-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # Cloud Sentinel (Go + Prometheus + Grafana)
+  # ============================================
+  cloud-sentinel:
+    build:
+      context: ./services/cloud-sentinel
+      dockerfile: Dockerfile
+    container_name: prodory-cloud-sentinel
+    ports:
+      - "${SENTINEL_PORT:-9090}:9090"
+      - "3001:3000"  # Grafana
+    environment:
+      - PROMETHEUS_RETENTION=${PROMETHEUS_RETENTION:-30d}
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ./data/prometheus:/prometheus
+      - ./data/grafana:/var/lib/grafana
+      - ./config/sentinel:/etc/sentinel:ro
+    networks:
+      - prodory-network
+    restart: unless-stopped
+
+  # ============================================
+  # Storage Autoscaler (Python Kubernetes Operator)
+  # ============================================
+  storage-autoscaler:
+    build:
+      context: ./services/storage-autoscaler
+      dockerfile: Dockerfile
+    container_name: prodory-storage-autoscaler
+    ports:
+      - "${STORAGE_AUTOSCALER_PORT:-8080}:8080"
+    environment:
+      - KUBECONFIG=/root/.kube/config
+      - LOG_LEVEL=info
+    volumes:
+      - ~/.kube/config:/root/.kube/config:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - prodory-network
+    restart: unless-stopped
+    privileged: true
+
+  # ============================================
+  # VMware to KubeVirt Migration Tool
+  # ============================================
+  vmware-migration:
+    build:
+      context: ./services/vmware-migration
+      dockerfile: Dockerfile
+    container_name: prodory-vmware-migration
+    ports:
+      - "${VMWARE_MIGRATION_PORT:-8081}:8081"
+    environment:
+      - VSPHERE_HOST=${VSPHERE_HOST}
+      - VSPHERE_USER=${VSPHERE_USER}
+      - VSPHERE_PASSWORD=${VSPHERE_PASSWORD}
+      - KUBECONFIG=/root/.kube/config
+    volumes:
+      - ~/.kube/config:/root/.kube/config:ro
+      - ./data/migrations:/app/migrations
+      - /var/run/libvirt:/var/run/libvirt
+    networks:
+      - prodory-network
+    restart: unless-stopped
+    privileged: true
+
+  # ============================================
+  # VM to Container Migration Tool
+  # ============================================
+  vm-to-container:
+    build:
+      context: ./services/vm-to-container
+      dockerfile: Dockerfile
+    container_name: prodory-vm-to-container
+    ports:
+      - "${VM_CONTAINER_PORT:-8082}:8082"
+    environment:
+      - DOCKER_HOST=${DOCKER_HOST:-unix:///var/run/docker.sock}
+      - NODE_ENV=${NODE_ENV:-production}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/container-migrations:/app/migrations
+      - ./data/output:/app/output
+    networks:
+      - prodory-network
+    restart: unless-stopped
+    privileged: true
+
+  # ============================================
+  # PostgreSQL Database (for local development)
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: prodory-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=prodory
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - prodory-network
+    restart: unless-stopped
+
+  # ============================================
+  # Redis Cache
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: prodory-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - prodory-network
+    restart: unless-stopped
+
+  # ============================================
+  # Nginx Reverse Proxy
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: prodory-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - finops-dashboard
+      - data-finops-agent
+      - cloud-sentinel
+    networks:
+      - prodory-network
+    restart: unless-stopped
+
+networks:
+  prodory-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres-data:
+  redis-data:

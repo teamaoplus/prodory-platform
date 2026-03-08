@@ -1,0 +1,20 @@
+apiVersion: v2
+name: storage-autoscaler
+description: Kubernetes Operator for PVC Auto-scaling
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - kubernetes
+  - operator
+  - storage
+  - pvc
+  - autoscaler
+home: https://prodory.io/storage-autoscaler
+sources:
+  - https://github.com/prodory/storage-autoscaler
+maintainers:
+  - name: Prodory Team
+    email: support@prodory.io
+annotations:
+  category: Storage

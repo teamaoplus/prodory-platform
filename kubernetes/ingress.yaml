@@ -1,0 +1,60 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prodory-ingress
+  namespace: prodory
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - finops.aoplus.in
+        - api.aoplus.in
+      secretName: prodory-tls
+  rules:
+    - host: finops.aoplus.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: finops-dashboard
+                port:
+                  number: 3000
+    - host: api.aoplus.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: data-finops-agent
+                port:
+                  number: 8000
+---
+# Alternative: Using Traefik Ingress
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: prodory-ingress
+#   namespace: prodory
+# spec:
+#   entryPoints:
+#     - websecure
+#   routes:
+#     - match: Host(`finops.aoplus.in`)
+#       kind: Rule
+#       services:
+#         - name: finops-dashboard
+#           port: 3000
+#     - match: Host(`api.aoplus.in`)
+#       kind: Rule
+#       services:
+#         - name: data-finops-agent
+#           port: 8000
+#   tls:
+#     certResolver: letsencrypt

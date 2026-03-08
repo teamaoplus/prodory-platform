@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prodory
+  labels:
+    name: prodory
+    app.kubernetes.io/name: prodory
+    app.kubernetes.io/component: platform
