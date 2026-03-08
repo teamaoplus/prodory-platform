@@ -1,0 +1,190 @@
+name: Build on Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'services/**'
+      - '.github/workflows/**'
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: omps
+
+jobs:
+  # Detect which services changed
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      finops-dashboard: ${{ steps.changes.outputs.finops-dashboard }}
+      data-finops-agent: ${{ steps.changes.outputs.data-finops-agent }}
+      k8s-in-a-box: ${{ steps.changes.outputs.k8s-in-a-box }}
+      storage-autoscaler: ${{ steps.changes.outputs.storage-autoscaler }}
+      cloud-sentinel: ${{ steps.changes.outputs.cloud-sentinel }}
+      vmware-migration: ${{ steps.changes.outputs.vmware-migration }}
+      vm-to-container: ${{ steps.changes.outputs.vm-to-container }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            finops-dashboard:
+              - 'services/finops-dashboard/**'
+            data-finops-agent:
+              - 'services/data-finops-agent/**'
+            k8s-in-a-box:
+              - 'services/kubernetes-in-a-box/**'
+            storage-autoscaler:
+              - 'services/storage-autoscaler/**'
+            cloud-sentinel:
+              - 'services/cloud-sentinel/**'
+            vmware-migration:
+              - 'services/vmware-migration/**'
+            vm-to-container:
+              - 'services/vm-to-container/**'
+
+  build-finops-dashboard:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.finops-dashboard == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/finops-dashboard
+          file: ./services/finops-dashboard/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=finops-dashboard
+
+  build-data-finops-agent:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.data-finops-agent == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/data-finops-agent
+          file: ./services/data-finops-agent/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=data-finops-agent
+
+  build-k8s-in-a-box:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.k8s-in-a-box == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/kubernetes-in-a-box
+          file: ./services/kubernetes-in-a-box/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=k8s-in-a-box
+
+  build-storage-autoscaler:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.storage-autoscaler == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/storage-autoscaler
+          file: ./services/storage-autoscaler/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=storage-autoscaler
+
+  build-cloud-sentinel:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.cloud-sentinel == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/cloud-sentinel
+          file: ./services/cloud-sentinel/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=cloud-sentinel
+
+  build-vmware-migration:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.vmware-migration == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/vmware-migration
+          file: ./services/vmware-migration/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=vmware-migration
+
+  build-vm-to-container:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.vm-to-container == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/vm-to-container
+          file: ./services/vm-to-container/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=vm-to-container

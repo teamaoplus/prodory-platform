@@ -1,0 +1,320 @@
+name: Manual Build and Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build'
+        required: true
+        type: choice
+        options:
+          - finops-dashboard
+          - data-finops-agent
+          - k8s-in-a-box
+          - storage-autoscaler
+          - cloud-sentinel
+          - vmware-migration
+          - vm-to-container
+          - all
+      tag:
+        description: 'Image tag (leave empty for auto)'
+        required: false
+        default: ''
+      push:
+        description: 'Push to registry'
+        required: true
+        type: boolean
+        default: true
+      platforms:
+        description: 'Target platforms'
+        required: true
+        type: choice
+        options:
+          - linux/amd64
+          - linux/amd64,linux/arm64
+          - linux/arm64
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: omps
+
+jobs:
+  build-finops-dashboard:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'finops-dashboard' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/finops-dashboard
+          file: ./services/finops-dashboard/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/finops-dashboard:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=finops-dashboard
+          cache-to: type=gha,mode=max,scope=finops-dashboard
+
+  build-data-finops-agent:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'data-finops-agent' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/data-finops-agent
+          file: ./services/data-finops-agent/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/data-finops-agent:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=data-finops-agent
+          cache-to: type=gha,mode=max,scope=data-finops-agent
+
+  build-k8s-in-a-box:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'k8s-in-a-box' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/kubernetes-in-a-box
+          file: ./services/kubernetes-in-a-box/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/k8s-in-a-box:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=k8s-in-a-box
+          cache-to: type=gha,mode=max,scope=k8s-in-a-box
+
+  build-storage-autoscaler:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'storage-autoscaler' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/storage-autoscaler
+          file: ./services/storage-autoscaler/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/storage-autoscaler:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=storage-autoscaler
+          cache-to: type=gha,mode=max,scope=storage-autoscaler
+
+  build-cloud-sentinel:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'cloud-sentinel' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/cloud-sentinel
+          file: ./services/cloud-sentinel/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/cloud-sentinel:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=cloud-sentinel
+          cache-to: type=gha,mode=max,scope=cloud-sentinel
+
+  build-vmware-migration:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'vmware-migration' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/vmware-migration
+          file: ./services/vmware-migration/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/vmware-migration:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=vmware-migration
+          cache-to: type=gha,mode=max,scope=vmware-migration
+
+  build-vm-to-container:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.service == 'vm-to-container' || github.event.inputs.service == 'all' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=manual-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/vm-to-container
+          file: ./services/vm-to-container/Dockerfile
+          platforms: ${{ github.event.inputs.platforms }}
+          push: ${{ github.event.inputs.push == 'true' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/vm-to-container:${{ steps.tag.outputs.TAG }}
+          cache-from: type=gha,scope=vm-to-container
+          cache-to: type=gha,mode=max,scope=vm-to-container
