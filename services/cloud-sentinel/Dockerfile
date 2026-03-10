@@ -9,11 +9,11 @@ RUN apk add --no-cache git
 # Copy go mod files
 COPY go.mod ./
 
+# Copy source code first (needed for go mod tidy)
+COPY . .
+
 # Generate go.sum and download dependencies
 RUN go mod tidy && go mod download
-
-# Copy source code
-COPY . .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o cloud-sentinel .

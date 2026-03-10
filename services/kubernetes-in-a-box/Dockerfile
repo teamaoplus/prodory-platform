@@ -9,11 +9,11 @@ RUN apk add --no-cache git
 # Copy go mod files
 COPY go.mod ./
 
+# Copy source code first (needed for go mod tidy)
+COPY . .
+
 # Generate go.sum and download dependencies
 RUN go mod tidy && go mod download
-
-# Copy source code
-COPY . .
 
 # Build the CLI
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o kib ./cmd/kib
@@ -31,9 +31,9 @@ RUN apk --no-cache add \
     bash \
     jq
 
-# Install k3sup
-RUN curl -sLS https://get.k3sup.dev | sh && \
-    mv k3sup /usr/local/bin/
+# Install k3sup (direct binary download)
+RUN curl -sSL https://github.com/alexellis/k3sup/releases/download/0.13.12/k3sup > /usr/local/bin/k3sup && \
+    chmod +x /usr/local/bin/k3sup
 
 # Install kubectl
 RUN curl -LO "https://dl.k8s/release/$(curl -L -s https://dl.k8s/release/stable.txt)/bin/linux/amd64/kubectl" && \

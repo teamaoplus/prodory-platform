@@ -6,7 +6,6 @@ WORKDIR /app
 RUN apk add --no-cache \
     docker-cli \
     qemu-img \
-    qemu-block \
     ca-certificates
 
 # Copy package files

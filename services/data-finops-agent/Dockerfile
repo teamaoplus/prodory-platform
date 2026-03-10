@@ -35,7 +35,9 @@ ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
 COPY app/ ./app/
-COPY config/ ./config/
+
+# Copy config if it exists (optional)
+COPY config/ ./config/ 2>/dev/null || true
 
 # Create data directory
 RUN mkdir -p /app/data
